@@ -5,7 +5,9 @@
 package com.erp.hardware.modelos;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Basic;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -14,13 +16,13 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 
 /**
  *
@@ -33,7 +35,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
     @NamedQuery(name = "Equipos.findByIdEquipo", query = "SELECT e FROM Equipos e WHERE e.idEquipo = :idEquipo"),
     @NamedQuery(name = "Equipos.findByTipoEquipo", query = "SELECT e FROM Equipos e WHERE e.tipoEquipo = :tipoEquipo"),
     @NamedQuery(name = "Equipos.findByMarcaModelo", query = "SELECT e FROM Equipos e WHERE e.marcaModelo = :marcaModelo"),
-    @NamedQuery(name = "Equipos.findByNumeroSerie", query = "SELECT e FROM Equipos e WHERE e.numeroSerie = :numeroSerie")})
+    @NamedQuery(name = "Equipos.findByNumeroSerie", query = "SELECT e FROM Equipos e WHERE e.numeroSerie = :numeroSerie"),
+    @NamedQuery(name = "Equipos.findByCaracteristicasHardware", query = "SELECT e FROM Equipos e WHERE e.caracteristicasHardware = :caracteristicasHardware"),
+    @NamedQuery(name = "Equipos.findByFechaCreacion", query = "SELECT e FROM Equipos e WHERE e.fechaCreacion = :fechaCreacion"),
+    @NamedQuery(name = "Equipos.findByFechaModificacion", query = "SELECT e FROM Equipos e WHERE e.fechaModificacion = :fechaModificacion"),
+    @NamedQuery(name = "Equipos.findByEstadoRegistro", query = "SELECT e FROM Equipos e WHERE e.estadoRegistro = :estadoRegistro")})
 public class Equipos implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -48,17 +54,28 @@ public class Equipos implements Serializable {
     private String marcaModelo;
     @Column(name = "numero_serie")
     private String numeroSerie;
-    @Lob
     @Column(name = "caracteristicas_hardware")
     private String caracteristicasHardware;
-    
+    @Column(name = "fecha_creacion")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date fechaCreacion;
+    @Column(name = "fecha_modificacion")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date fechaModificacion;
+    @Column(name = "estado_registro")
+    private Boolean estadoRegistro;
     @JsonIgnore
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "idEquipo")
     private List<OrdenesTrabajo> ordenesTrabajoList;
-    
     @JoinColumn(name = "id_cliente", referencedColumnName = "id_cliente")
     @ManyToOne(optional = false)
     private Clientes idCliente;
+    @JoinColumn(name = "usuario_creacion", referencedColumnName = "id_usuario")
+    @ManyToOne
+    private Usuarios usuarioCreacion;
+    @JoinColumn(name = "usuario_modificacion", referencedColumnName = "id_usuario")
+    @ManyToOne
+    private Usuarios usuarioModificacion;
 
     public Equipos() {
     }
@@ -107,6 +124,30 @@ public class Equipos implements Serializable {
         this.caracteristicasHardware = caracteristicasHardware;
     }
 
+    public Date getFechaCreacion() {
+        return fechaCreacion;
+    }
+
+    public void setFechaCreacion(Date fechaCreacion) {
+        this.fechaCreacion = fechaCreacion;
+    }
+
+    public Date getFechaModificacion() {
+        return fechaModificacion;
+    }
+
+    public void setFechaModificacion(Date fechaModificacion) {
+        this.fechaModificacion = fechaModificacion;
+    }
+
+    public Boolean getEstadoRegistro() {
+        return estadoRegistro;
+    }
+
+    public void setEstadoRegistro(Boolean estadoRegistro) {
+        this.estadoRegistro = estadoRegistro;
+    }
+
     public List<OrdenesTrabajo> getOrdenesTrabajoList() {
         return ordenesTrabajoList;
     }
@@ -121,6 +162,22 @@ public class Equipos implements Serializable {
 
     public void setIdCliente(Clientes idCliente) {
         this.idCliente = idCliente;
+    }
+
+    public Usuarios getUsuarioCreacion() {
+        return usuarioCreacion;
+    }
+
+    public void setUsuarioCreacion(Usuarios usuarioCreacion) {
+        this.usuarioCreacion = usuarioCreacion;
+    }
+
+    public Usuarios getUsuarioModificacion() {
+        return usuarioModificacion;
+    }
+
+    public void setUsuarioModificacion(Usuarios usuarioModificacion) {
+        this.usuarioModificacion = usuarioModificacion;
     }
 
     @Override

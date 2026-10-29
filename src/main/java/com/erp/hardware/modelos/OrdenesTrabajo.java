@@ -13,14 +13,13 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  *
  * @author selvi
@@ -31,8 +30,13 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
     @NamedQuery(name = "OrdenesTrabajo.findAll", query = "SELECT o FROM OrdenesTrabajo o"),
     @NamedQuery(name = "OrdenesTrabajo.findByIdOrden", query = "SELECT o FROM OrdenesTrabajo o WHERE o.idOrden = :idOrden"),
     @NamedQuery(name = "OrdenesTrabajo.findByFechaIngreso", query = "SELECT o FROM OrdenesTrabajo o WHERE o.fechaIngreso = :fechaIngreso"),
+    @NamedQuery(name = "OrdenesTrabajo.findByProblemaReportado", query = "SELECT o FROM OrdenesTrabajo o WHERE o.problemaReportado = :problemaReportado"),
+    @NamedQuery(name = "OrdenesTrabajo.findByNotasEspeciales", query = "SELECT o FROM OrdenesTrabajo o WHERE o.notasEspeciales = :notasEspeciales"),
     @NamedQuery(name = "OrdenesTrabajo.findByEstadoReparacion", query = "SELECT o FROM OrdenesTrabajo o WHERE o.estadoReparacion = :estadoReparacion"),
-    @NamedQuery(name = "OrdenesTrabajo.findByFechaEntregaEstimada", query = "SELECT o FROM OrdenesTrabajo o WHERE o.fechaEntregaEstimada = :fechaEntregaEstimada")})
+    @NamedQuery(name = "OrdenesTrabajo.findByFechaEntregaEstimada", query = "SELECT o FROM OrdenesTrabajo o WHERE o.fechaEntregaEstimada = :fechaEntregaEstimada"),
+    @NamedQuery(name = "OrdenesTrabajo.findByFechaCreacion", query = "SELECT o FROM OrdenesTrabajo o WHERE o.fechaCreacion = :fechaCreacion"),
+    @NamedQuery(name = "OrdenesTrabajo.findByFechaModificacion", query = "SELECT o FROM OrdenesTrabajo o WHERE o.fechaModificacion = :fechaModificacion"),
+    @NamedQuery(name = "OrdenesTrabajo.findByEstadoRegistro", query = "SELECT o FROM OrdenesTrabajo o WHERE o.estadoRegistro = :estadoRegistro")})
 public class OrdenesTrabajo implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -45,10 +49,8 @@ public class OrdenesTrabajo implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     private Date fechaIngreso;
     @Basic(optional = false)
-    @Lob
     @Column(name = "problema_reportado")
     private String problemaReportado;
-    @Lob
     @Column(name = "notas_especiales")
     private String notasEspeciales;
     @Column(name = "estado_reparacion")
@@ -56,11 +58,25 @@ public class OrdenesTrabajo implements Serializable {
     @Column(name = "fecha_entrega_estimada")
     @Temporal(TemporalType.DATE)
     private Date fechaEntregaEstimada;
-    
+    @Column(name = "fecha_creacion")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date fechaCreacion;
+    @Column(name = "fecha_modificacion")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date fechaModificacion;
+    @Column(name = "estado_registro")
+    private Boolean estadoRegistro;
+    @Column(name = "requiere_respaldo")
+    private Boolean requiereRespaldo = false;
     @JoinColumn(name = "id_equipo", referencedColumnName = "id_equipo")
     @ManyToOne(optional = false)
     private Equipos idEquipo;
-    
+    @JoinColumn(name = "usuario_creacion", referencedColumnName = "id_usuario")
+    @ManyToOne
+    private Usuarios usuarioCreacion;
+    @JoinColumn(name = "usuario_modificacion", referencedColumnName = "id_usuario")
+    @ManyToOne
+    private Usuarios usuarioModificacion;
     @JoinColumn(name = "id_usuario_tecnico", referencedColumnName = "id_usuario")
     @ManyToOne(optional = false)
     private Usuarios idUsuarioTecnico;
@@ -125,6 +141,30 @@ public class OrdenesTrabajo implements Serializable {
         this.fechaEntregaEstimada = fechaEntregaEstimada;
     }
 
+    public Date getFechaCreacion() {
+        return fechaCreacion;
+    }
+
+    public void setFechaCreacion(Date fechaCreacion) {
+        this.fechaCreacion = fechaCreacion;
+    }
+
+    public Date getFechaModificacion() {
+        return fechaModificacion;
+    }
+
+    public void setFechaModificacion(Date fechaModificacion) {
+        this.fechaModificacion = fechaModificacion;
+    }
+
+    public Boolean getEstadoRegistro() {
+        return estadoRegistro;
+    }
+
+    public void setEstadoRegistro(Boolean estadoRegistro) {
+        this.estadoRegistro = estadoRegistro;
+    }
+
     public Equipos getIdEquipo() {
         return idEquipo;
     }
@@ -133,12 +173,36 @@ public class OrdenesTrabajo implements Serializable {
         this.idEquipo = idEquipo;
     }
 
+    public Usuarios getUsuarioCreacion() {
+        return usuarioCreacion;
+    }
+
+    public void setUsuarioCreacion(Usuarios usuarioCreacion) {
+        this.usuarioCreacion = usuarioCreacion;
+    }
+
+    public Usuarios getUsuarioModificacion() {
+        return usuarioModificacion;
+    }
+
+    public void setUsuarioModificacion(Usuarios usuarioModificacion) {
+        this.usuarioModificacion = usuarioModificacion;
+    }
+
     public Usuarios getIdUsuarioTecnico() {
         return idUsuarioTecnico;
     }
 
     public void setIdUsuarioTecnico(Usuarios idUsuarioTecnico) {
         this.idUsuarioTecnico = idUsuarioTecnico;
+    }
+
+    public Boolean getRequiereRespaldo() {
+        return requiereRespaldo;
+    }
+
+    public void setRequiereRespaldo(Boolean requiereRespaldo) {
+        this.requiereRespaldo = requiereRespaldo;
     }
 
     @Override

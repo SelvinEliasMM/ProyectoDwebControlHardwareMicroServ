@@ -6,6 +6,7 @@
     <class>com.erp.hardware.modelos.Equipos</class>
     <class>com.erp.hardware.modelos.Usuarios</class>
     <class>com.erp.hardware.modelos.Clientes</class>
+    <class>com.erp.hardware.modelos.BitacoraAuditoria</class>
     <properties>
       <property name="javax.persistence.jdbc.url" value="jdbc:sqlserver://localhost:1433;databaseName=ERP_Hardware_DB;encrypt=true;trustServerCertificate=true;"/>
       <property name="javax.persistence.jdbc.user" value="sa"/>

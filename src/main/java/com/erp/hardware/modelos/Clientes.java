@@ -5,7 +5,9 @@
 package com.erp.hardware.modelos;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Basic;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -13,11 +15,14 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 
 /**
  *
@@ -31,7 +36,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
     @NamedQuery(name = "Clientes.findByNombreCliente", query = "SELECT c FROM Clientes c WHERE c.nombreCliente = :nombreCliente"),
     @NamedQuery(name = "Clientes.findByTelefono", query = "SELECT c FROM Clientes c WHERE c.telefono = :telefono"),
     @NamedQuery(name = "Clientes.findByEmail", query = "SELECT c FROM Clientes c WHERE c.email = :email"),
-    @NamedQuery(name = "Clientes.findByDireccion", query = "SELECT c FROM Clientes c WHERE c.direccion = :direccion")})
+    @NamedQuery(name = "Clientes.findByDireccion", query = "SELECT c FROM Clientes c WHERE c.direccion = :direccion"),
+    @NamedQuery(name = "Clientes.findByFechaCreacion", query = "SELECT c FROM Clientes c WHERE c.fechaCreacion = :fechaCreacion"),
+    @NamedQuery(name = "Clientes.findByFechaModificacion", query = "SELECT c FROM Clientes c WHERE c.fechaModificacion = :fechaModificacion"),
+    @NamedQuery(name = "Clientes.findByEstadoRegistro", query = "SELECT c FROM Clientes c WHERE c.estadoRegistro = :estadoRegistro")})
 public class Clientes implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -49,7 +57,20 @@ public class Clientes implements Serializable {
     private String email;
     @Column(name = "direccion")
     private String direccion;
-    
+    @Column(name = "fecha_creacion")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date fechaCreacion;
+    @Column(name = "fecha_modificacion")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date fechaModificacion;
+    @Column(name = "estado_registro")
+    private Boolean estadoRegistro;
+    @JoinColumn(name = "usuario_creacion", referencedColumnName = "id_usuario")
+    @ManyToOne
+    private Usuarios usuarioCreacion;
+    @JoinColumn(name = "usuario_modificacion", referencedColumnName = "id_usuario")
+    @ManyToOne
+    private Usuarios usuarioModificacion;
     @JsonIgnore
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "idCliente")
     private List<Equipos> equiposList;
@@ -104,6 +125,46 @@ public class Clientes implements Serializable {
 
     public void setDireccion(String direccion) {
         this.direccion = direccion;
+    }
+
+    public Date getFechaCreacion() {
+        return fechaCreacion;
+    }
+
+    public void setFechaCreacion(Date fechaCreacion) {
+        this.fechaCreacion = fechaCreacion;
+    }
+
+    public Date getFechaModificacion() {
+        return fechaModificacion;
+    }
+
+    public void setFechaModificacion(Date fechaModificacion) {
+        this.fechaModificacion = fechaModificacion;
+    }
+
+    public Boolean getEstadoRegistro() {
+        return estadoRegistro;
+    }
+
+    public void setEstadoRegistro(Boolean estadoRegistro) {
+        this.estadoRegistro = estadoRegistro;
+    }
+
+    public Usuarios getUsuarioCreacion() {
+        return usuarioCreacion;
+    }
+
+    public void setUsuarioCreacion(Usuarios usuarioCreacion) {
+        this.usuarioCreacion = usuarioCreacion;
+    }
+
+    public Usuarios getUsuarioModificacion() {
+        return usuarioModificacion;
+    }
+
+    public void setUsuarioModificacion(Usuarios usuarioModificacion) {
+        this.usuarioModificacion = usuarioModificacion;
     }
 
     public List<Equipos> getEquiposList() {
