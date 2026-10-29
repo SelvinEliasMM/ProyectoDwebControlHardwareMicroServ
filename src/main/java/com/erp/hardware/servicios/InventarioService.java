@@ -101,7 +101,7 @@ public class InventarioService {
         bit.setIdUsuario(new Usuarios(idUsuario != null ? idUsuario : 1));
         bit.setDatosOriginales(esNuevo ? "Nuevo repuesto" : "Actualización de repuesto");
         bit.setDatosNuevos("{\"id_repuesto\":" + guardado.getIdRepuesto() + ",\"codigo\":\"" + guardado.getCodigoRepuesto() + "\",\"nombre\":\"" + guardado.getNombreRepuesto() + "\",\"stock\":" + guardado.getStock() + "}");
-        bitacoraRepository.save(bit);
+       // bitacoraRepository.save(bit);
 
         return guardado;
     }

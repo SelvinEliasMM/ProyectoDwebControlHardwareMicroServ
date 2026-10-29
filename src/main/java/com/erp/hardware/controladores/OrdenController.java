@@ -89,7 +89,7 @@ public class OrdenController {
                 bit.setIdUsuario(guardada.getUsuarioCreacion() != null ? guardada.getUsuarioCreacion() : guardada.getIdUsuarioTecnico());
                 bit.setDatosOriginales("Ingreso inicial");
                 bit.setDatosNuevos("{\"id_orden\":" + guardada.getIdOrden() + ",\"estado\":\"" + guardada.getEstadoReparacion() + "\",\"problema\":\"" + guardada.getProblemaReportado() + "\"}");
-                bitacoraRepository.save(bit);
+              //  bitacoraRepository.save(bit);
             } catch (Exception ex) {}
 
             return ResponseEntity.status(HttpStatus.CREATED).body(guardada);
@@ -157,9 +157,32 @@ public class OrdenController {
             bit.setIdUsuario(guardada.getUsuarioModificacion());
             bit.setDatosOriginales("{\"id_orden\":" + guardada.getIdOrden() + ",\"estado\":\"" + estadoAnt + "\"}");
             bit.setDatosNuevos("{\"id_orden\":" + guardada.getIdOrden() + ",\"estado_anterior\":\"" + estadoAnt + "\",\"estado_nuevo\":\"" + nuevoEstado + "\"}");
-            bitacoraRepository.save(bit);
+          //  bitacoraRepository.save(bit);
         } catch (Exception ex) {}
 
         return ResponseEntity.ok(guardada);
+    }
+    
+    
+    @GetMapping("/consulta-publica/{id}")
+    public org.springframework.http.ResponseEntity<?> consultarOrdenPublica(@PathVariable Integer id) {
+        return ordenesRepository.findById(id)
+            .filter(orden -> Boolean.TRUE.equals(orden.getEstadoRegistro()))
+            .map(orden -> {
+                java.util.Map<String, Object> respuesta = new java.util.HashMap<>();
+                respuesta.put("idOrden", orden.getIdOrden());
+                respuesta.put("ticket", "#ORD-" + orden.getIdOrden());
+                respuesta.put("cliente", orden.getIdEquipo().getIdCliente().getNombreCliente());
+                respuesta.put("equipo", orden.getIdEquipo().getTipoEquipo() + " - " + orden.getIdEquipo().getMarcaModelo());
+                respuesta.put("numeroSerie", orden.getIdEquipo().getNumeroSerie());
+                respuesta.put("problemaReportado", orden.getProblemaReportado());
+                respuesta.put("estadoReparacion", orden.getEstadoReparacion());
+                respuesta.put("fechaIngreso", orden.getFechaIngreso());
+                respuesta.put("fechaModificacion", orden.getFechaModificacion());
+                respuesta.put("tecnicoAsignado", orden.getIdUsuarioTecnico().getNombreCompleto());
+                return org.springframework.http.ResponseEntity.ok(respuesta);
+            })
+            .orElse(org.springframework.http.ResponseEntity.status(404)
+                .body(java.util.Map.of("mensaje", "No se encontró ninguna orden activa con ese número de ticket.")));
     }
 }

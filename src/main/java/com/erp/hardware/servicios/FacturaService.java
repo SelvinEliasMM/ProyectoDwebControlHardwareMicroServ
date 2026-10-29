@@ -110,7 +110,7 @@ public class FacturaService {
             bit.setIdUsuario(new Usuarios(idUsuario != null ? idUsuario : 1));
             bit.setDatosOriginales("Emisión de factura");
             bit.setDatosNuevos("{\"id_factura\":" + facturaGuardada.getIdFactura() + ",\"numero\":\"" + facturaGuardada.getNumeroFactura() + "\",\"id_orden\":" + orden.getIdOrden() + ",\"total\":" + facturaGuardada.getTotal() + "}");
-            bitacoraRepository.save(bit);
+            //bitacoraRepository.save(bit);
         } catch (Exception ex) {}
 
         // actual estado de la orden a 'Reparado' si aún no estaba en ese estado o Entregado
