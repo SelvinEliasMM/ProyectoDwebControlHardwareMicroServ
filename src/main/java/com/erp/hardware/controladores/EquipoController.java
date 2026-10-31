@@ -1,9 +1,7 @@
 package com.erp.hardware.controladores;
 
-import com.erp.hardware.modelos.BitacoraAuditoria;
 import com.erp.hardware.modelos.Equipos;
 import com.erp.hardware.modelos.Usuarios;
-import com.erp.hardware.repositorios.BitacoraAuditoriaRepository;
 import com.erp.hardware.repositorios.EquiposRepository;
 import java.util.Date;
 import java.util.List;
@@ -26,15 +24,11 @@ public class EquipoController {
     @Autowired
     private EquiposRepository equiposRepository;
 
-    @Autowired
-    private BitacoraAuditoriaRepository bitacoraRepository;
-
     @GetMapping
     public List<Equipos> listarEquipos() {
-        return equiposRepository.findByEstadoRegistroTrue(); 
+        return equiposRepository.findByEstadoRegistroTrue();
     }
 
-    // registro de hardware con validación de serie única
     @PostMapping
     public ResponseEntity<?> guardarEquipo(@RequestBody Equipos equipo) {
         try {
@@ -58,23 +52,14 @@ public class EquipoController {
             }
             equipo.setNumeroSerie(serie);
 
+            if (equipo.getUsuarioCreacion() == null || equipo.getUsuarioCreacion().getIdUsuario() == null) {
+                equipo.setUsuarioCreacion(new Usuarios(1));
+            }
+
             equipo.setEstadoRegistro(true);
             equipo.setFechaCreacion(new Date());
 
             Equipos guardado = equiposRepository.save(equipo);
-
-            // registro en bitacora
-            try {
-                BitacoraAuditoria bit = new BitacoraAuditoria();
-                bit.setTablaAfectada("EQUIPOS");
-                bit.setAccionRealizada("INSERT");
-                bit.setFechaHora(new Date());
-                bit.setIdUsuario(guardado.getUsuarioCreacion() != null ? guardado.getUsuarioCreacion() : new Usuarios(1));
-                bit.setDatosOriginales("Nuevo equipo");
-                bit.setDatosNuevos("{\"id_equipo\":" + guardado.getIdEquipo() + ",\"marca_modelo\":\"" + guardado.getMarcaModelo() + "\",\"numero_serie\":\"" + guardado.getNumeroSerie() + "\"}");
-                bitacoraRepository.save(bit);
-            } catch (Exception ex) {}
-
             return ResponseEntity.status(HttpStatus.CREATED).body(guardado);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("mensaje", e.getMessage()));

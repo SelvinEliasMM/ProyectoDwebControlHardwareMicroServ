@@ -1,5 +1,6 @@
 package com.erp.hardware.modelos;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
@@ -65,6 +66,14 @@ public class Facturas implements Serializable {
     @Column(name = "fecha_creacion")
     @Temporal(TemporalType.TIMESTAMP)
     private Date fechaCreacion;
+
+    @JoinColumn(name = "usuario_modificacion", referencedColumnName = "id_usuario")
+    @ManyToOne
+    private Usuarios usuarioModificacion;
+
+    @Column(name = "fecha_modificacion")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date fechaModificacion;
 
     @Column(name = "estado_registro")
     private Boolean estadoRegistro = true;
@@ -164,6 +173,22 @@ public class Facturas implements Serializable {
         this.fechaCreacion = fechaCreacion;
     }
 
+    public Usuarios getUsuarioModificacion() {
+        return usuarioModificacion;
+    }
+
+    public void setUsuarioModificacion(Usuarios usuarioModificacion) {
+        this.usuarioModificacion = usuarioModificacion;
+    }
+
+    public Date getFechaModificacion() {
+        return fechaModificacion;
+    }
+
+    public void setFechaModificacion(Date fechaModificacion) {
+        this.fechaModificacion = fechaModificacion;
+    }
+
     public Boolean getEstadoRegistro() {
         return estadoRegistro;
     }
@@ -172,12 +197,12 @@ public class Facturas implements Serializable {
         this.estadoRegistro = estadoRegistro;
     }
 
-    @com.fasterxml.jackson.annotation.JsonProperty("totalFactura")
+    @JsonProperty("totalFactura")
     public BigDecimal getTotalFactura() {
         return this.total;
     }
 
-    @com.fasterxml.jackson.annotation.JsonProperty("totalFactura")
+    @JsonProperty("totalFactura")
     public void setTotalFactura(BigDecimal totalFactura) {
         if (totalFactura != null) {
             this.total = totalFactura;

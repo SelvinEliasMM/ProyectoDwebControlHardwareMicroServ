@@ -1,9 +1,7 @@
 package com.erp.hardware.controladores;
 
-import com.erp.hardware.modelos.BitacoraAuditoria;
 import com.erp.hardware.modelos.Clientes;
 import com.erp.hardware.modelos.Usuarios;
-import com.erp.hardware.repositorios.BitacoraAuditoriaRepository;
 import com.erp.hardware.repositorios.ClientesRepository;
 import java.util.Date;
 import java.util.List;
@@ -26,15 +24,11 @@ public class ClienteController {
     @Autowired
     private ClientesRepository clientesRepository;
 
-    @Autowired
-    private BitacoraAuditoriaRepository bitacoraRepository;
-
     @GetMapping
     public List<Clientes> listarClientes() {
         return clientesRepository.findByEstadoRegistroTrue();
     }
 
-    // CRUD de clientes con validación de obligatorios y no permitir correos duplicados
     @PostMapping
     public ResponseEntity<?> guardarCliente(@RequestBody Clientes cliente) {
         try {
@@ -52,23 +46,14 @@ public class ClienteController {
                 cliente.setEmail(emailNormalizado);
             }
 
+            if (cliente.getUsuarioCreacion() == null || cliente.getUsuarioCreacion().getIdUsuario() == null) {
+                cliente.setUsuarioCreacion(new Usuarios(1));
+            }
+
             cliente.setEstadoRegistro(true);
             cliente.setFechaCreacion(new Date());
 
             Clientes guardado = clientesRepository.save(cliente);
-
-            // registro en bitacora
-            try {
-                BitacoraAuditoria bit = new BitacoraAuditoria();
-                bit.setTablaAfectada("CLIENTES");
-                bit.setAccionRealizada("INSERT");
-                bit.setFechaHora(new Date());
-                bit.setIdUsuario(guardado.getUsuarioCreacion() != null ? guardado.getUsuarioCreacion() : new Usuarios(1));
-                bit.setDatosOriginales("Nuevo cliente");
-                bit.setDatosNuevos("{\"id_cliente\":" + guardado.getIdCliente() + ",\"nombre\":\"" + guardado.getNombreCliente() + "\",\"email\":\"" + guardado.getEmail() + "\"}");
-                bitacoraRepository.save(bit);
-            } catch (Exception ex) {}
-
             return ResponseEntity.status(HttpStatus.CREATED).body(guardado);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("mensaje", e.getMessage()));

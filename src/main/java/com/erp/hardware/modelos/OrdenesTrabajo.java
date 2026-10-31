@@ -68,6 +68,9 @@ public class OrdenesTrabajo implements Serializable {
     private Boolean estadoRegistro;
     @Column(name = "requiere_respaldo")
     private Boolean requiereRespaldo = false;
+    // token unico del ticket
+    @Column(name = "token_seguimiento", unique = true, updatable = false)
+    private String tokenSeguimiento;
     @JoinColumn(name = "id_equipo", referencedColumnName = "id_equipo")
     @ManyToOne(optional = false)
     private Equipos idEquipo;
@@ -92,6 +95,10 @@ public class OrdenesTrabajo implements Serializable {
         this.idOrden = idOrden;
         this.problemaReportado = problemaReportado;
     }
+
+    public String getTokenSeguimiento() { return tokenSeguimiento; }
+
+    public void setTokenSeguimiento(String tokenSeguimiento) { this.tokenSeguimiento = tokenSeguimiento; }
 
     public Integer getIdOrden() {
         return idOrden;

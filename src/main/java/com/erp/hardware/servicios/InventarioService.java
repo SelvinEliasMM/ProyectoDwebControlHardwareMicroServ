@@ -1,12 +1,10 @@
 package com.erp.hardware.servicios;
 
-import com.erp.hardware.modelos.BitacoraAuditoria;
 import com.erp.hardware.modelos.DetalleRepuestosOrden;
 import com.erp.hardware.modelos.MovimientosInventario;
 import com.erp.hardware.modelos.OrdenesTrabajo;
 import com.erp.hardware.modelos.Repuestos;
 import com.erp.hardware.modelos.Usuarios;
-import com.erp.hardware.repositorios.BitacoraAuditoriaRepository;
 import com.erp.hardware.repositorios.DetalleRepuestosOrdenRepository;
 import com.erp.hardware.repositorios.MovimientosInventarioRepository;
 import com.erp.hardware.repositorios.OrdenesTrabajoRepository;
@@ -33,9 +31,6 @@ public class InventarioService {
     @Autowired
     private OrdenesTrabajoRepository ordenesRepository;
 
-    @Autowired
-    private BitacoraAuditoriaRepository bitacoraRepository;
-
     public List<Repuestos> listarRepuestos() {
         return repuestosRepository.findByEstadoRegistroTrue();
     }
@@ -60,23 +55,20 @@ public class InventarioService {
             throw new IllegalArgumentException("El precio de venta no puede ser menor al costo.");
         }
 
+        Usuarios usuarioOperacion = new Usuarios(idUsuario != null ? idUsuario : 1);
+
         if (esNuevo) {
             repuesto.setFechaCreacion(new Date());
             repuesto.setEstadoRegistro(true);
-            if (idUsuario != null) {
-                repuesto.setUsuarioCreacion(new Usuarios(idUsuario));
-            }
+            repuesto.setUsuarioCreacion(usuarioOperacion);
         } else {
             repuesto.setFechaModificacion(new Date());
-            if (idUsuario != null) {
-                repuesto.setUsuarioModificacion(new Usuarios(idUsuario));
-            }
+            repuesto.setUsuarioModificacion(usuarioOperacion);
         }
 
         Repuestos guardado = repuestosRepository.save(repuesto);
 
-        // si es nuevo y se le asignó stock inicial, registrar entrada en Kardex
-        if (esNuevo && guardado.getStock() > 0) {
+        if (esNuevo && guardado.getStock() != null && guardado.getStock() > 0) {
             MovimientosInventario mov = new MovimientosInventario();
             mov.setIdRepuesto(guardado);
             mov.setTipoMovimiento("ENTRADA");
@@ -85,28 +77,13 @@ public class InventarioService {
             mov.setStockNuevo(guardado.getStock());
             mov.setMotivo("Carga inicial de producto");
             mov.setFechaMovimiento(new Date());
-            if (idUsuario != null) {
-                mov.setIdUsuario(new Usuarios(idUsuario));
-            } else {
-                mov.setIdUsuario(new Usuarios(1));
-            }
+            mov.setIdUsuario(usuarioOperacion);
             movimientosRepository.save(mov);
         }
-
-        // bitacora
-        BitacoraAuditoria bit = new BitacoraAuditoria();
-        bit.setTablaAfectada("REPUESTOS");
-        bit.setAccionRealizada(esNuevo ? "INSERT" : "UPDATE");
-        bit.setFechaHora(new Date());
-        bit.setIdUsuario(new Usuarios(idUsuario != null ? idUsuario : 1));
-        bit.setDatosOriginales(esNuevo ? "Nuevo repuesto" : "Actualización de repuesto");
-        bit.setDatosNuevos("{\"id_repuesto\":" + guardado.getIdRepuesto() + ",\"codigo\":\"" + guardado.getCodigoRepuesto() + "\",\"nombre\":\"" + guardado.getNombreRepuesto() + "\",\"stock\":" + guardado.getStock() + "}");
-       // bitacoraRepository.save(bit);
 
         return guardado;
     }
 
-    // asignar repuesto a orden descontando automaticamente del stock y registrando Kardex
     @Transactional
     public DetalleRepuestosOrden asignarRepuestoAOrden(Integer idOrden, Integer idRepuesto, Integer cantidad, Integer idUsuario) {
         if (cantidad == null || cantidad <= 0) {
@@ -124,15 +101,14 @@ public class InventarioService {
             throw new IllegalStateException("Stock insuficiente. Disponible: " + stockActual + ", Solicitado: " + cantidad);
         }
 
+        Usuarios usuarioOperacion = new Usuarios(idUsuario != null ? idUsuario : 1);
+
         int stockNuevo = stockActual - cantidad;
         repuesto.setStock(stockNuevo);
         repuesto.setFechaModificacion(new Date());
-        if (idUsuario != null) {
-            repuesto.setUsuarioModificacion(new Usuarios(idUsuario));
-        }
+        repuesto.setUsuarioModificacion(usuarioOperacion);
         repuestosRepository.save(repuesto);
 
-        // guardar detalle
         DetalleRepuestosOrden detalle = new DetalleRepuestosOrden();
         detalle.setIdOrden(orden);
         detalle.setIdRepuesto(repuesto);
@@ -140,12 +116,9 @@ public class InventarioService {
         detalle.setPrecioUnitario(repuesto.getPrecioVenta());
         detalle.setSubtotal(repuesto.getPrecioVenta().multiply(BigDecimal.valueOf(cantidad)));
         detalle.setFechaRegistro(new Date());
-        if (idUsuario != null) {
-            detalle.setUsuarioCreacion(new Usuarios(idUsuario));
-        }
+        detalle.setUsuarioCreacion(usuarioOperacion);
         DetalleRepuestosOrden detalleGuardado = detalleRepository.save(detalle);
 
-        // registrar Kardex
         MovimientosInventario mov = new MovimientosInventario();
         mov.setIdRepuesto(repuesto);
         mov.setTipoMovimiento("SALIDA");
@@ -155,11 +128,7 @@ public class InventarioService {
         mov.setMotivo("Asignado a Orden #ORD-" + orden.getIdOrden());
         mov.setIdOrden(orden);
         mov.setFechaMovimiento(new Date());
-        if (idUsuario != null) {
-            mov.setIdUsuario(new Usuarios(idUsuario));
-        } else {
-            mov.setIdUsuario(new Usuarios(1));
-        }
+        mov.setIdUsuario(usuarioOperacion);
         movimientosRepository.save(mov);
 
         return detalleGuardado;

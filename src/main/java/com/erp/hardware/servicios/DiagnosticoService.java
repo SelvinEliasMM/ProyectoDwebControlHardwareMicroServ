@@ -31,25 +31,22 @@ public class DiagnosticoService {
         OrdenesTrabajo orden = ordenesRepository.findById(idOrden)
                 .orElseThrow(() -> new RuntimeException("Orden no encontrada: " + idOrden));
 
+        Usuarios usuarioOperacion = new Usuarios(idUsuario != null ? idUsuario : 1);
+
         diag.setIdOrden(orden);
         diag.setFechaDiagnostico(new Date());
         diag.setFechaCreacion(new Date());
         diag.setEstadoRegistro(true);
+        diag.setUsuarioCreacion(usuarioOperacion);
 
-        if (diag.getIdTecnico() == null && idUsuario != null) {
-            diag.setIdTecnico(new Usuarios(idUsuario));
-        }
-        if (idUsuario != null) {
-            diag.setUsuarioCreacion(new Usuarios(idUsuario));
+        if (diag.getIdTecnico() == null) {
+            diag.setIdTecnico(usuarioOperacion);
         }
 
-        // si la orden estaba en estado 'Recibido', pasarla a 'En Diagnóstico'
         if ("Recibido".equalsIgnoreCase(orden.getEstadoReparacion())) {
             orden.setEstadoReparacion("En Diagnóstico");
             orden.setFechaModificacion(new Date());
-            if (idUsuario != null) {
-                orden.setUsuarioModificacion(new Usuarios(idUsuario));
-            }
+            orden.setUsuarioModificacion(usuarioOperacion);
             ordenesRepository.save(orden);
         }
 

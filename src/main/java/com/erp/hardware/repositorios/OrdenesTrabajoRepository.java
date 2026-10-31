@@ -3,6 +3,7 @@ package com.erp.hardware.repositorios;
 
 import com.erp.hardware.modelos.OrdenesTrabajo;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -12,4 +13,8 @@ public interface OrdenesTrabajoRepository extends JpaRepository<OrdenesTrabajo, 
   
     @Query("SELECT o FROM OrdenesTrabajo o WHERE o.estadoRegistro = true OR o.estadoRegistro IS NULL")
     List<OrdenesTrabajo> findByEstadoRegistroTrue(); // Filtro de activos
+
+    Optional<OrdenesTrabajo> findByTokenSeguimiento(String tokenSeguimiento); // busca por token
+
+    boolean existsByTokenSeguimiento(String tokenSeguimiento);
 }
